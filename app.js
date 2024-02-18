@@ -72,11 +72,11 @@ app.get(
 app.get(
   "/auth/google/callback",
   passport.authenticate("google", {
-    successRedirect: "http://localhost:3001/dashboard",
-    failureRedirect: "http://localhost:3001/login",
+    session: false,
+    successRedirect: "http://localhost:3000/dashboard",
+    failureRedirect: "http://localhost:3000/login",
   }),
   (req, res) => {
-    // After successful Google authentication, generate a JWT token
 
     res.json({ token:"testtoken" });
   }
