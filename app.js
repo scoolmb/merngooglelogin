@@ -7,7 +7,7 @@ require("./db/connect");
 const passport = require("passport");
 const OAuth2Strategy = require("passport-google-oauth2");
 const userDb = require("./model/userSchema");
-const jwt = require('jsonwebtoken');
+
 const jwtSecret = 'your-jwt-secret'; // Replace with your own secret key
 const clientId =
   "108207914740-3k2dsl1i59r5fsdu2qrudg196ee2csja.apps.googleusercontent.com";
@@ -77,9 +77,8 @@ app.get(
   }),
   (req, res) => {
     // After successful Google authentication, generate a JWT token
-    const token = jwt.sign({ userId: req.user._id }, jwtSecret, { expiresIn: '1h' }); // Customize token expiration as needed
-    // Send the JWT token back to the client
-    res.json({ token });
+
+    res.json({ token:"testtoken" });
   }
 );
 
