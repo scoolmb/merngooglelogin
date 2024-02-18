@@ -8,6 +8,8 @@ const session = require("express-session");
 const passport = require("passport");
 const OAuth2Strategy = require("passport-google-oauth2");
 const userDb = require("./model/userSchema");
+const CustomError = require("./utils/CustomError");
+const errorHandler = require("./utils/errorHandler");
 const clientId =
   "108207914740-3k2dsl1i59r5fsdu2qrudg196ee2csja.apps.googleusercontent.com";
 const clientSecret = "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";
@@ -70,6 +72,11 @@ passport.serializeUser((user, done)=> {
 passport.deserializeUser((user, done)=> {
     done(null, user);
 })
+app.all('*', (req, res, next) => {
+  throw new CustomError(`can't found the ${req.originalUrl}`, 404)
+})
+
+app.use(errorHandler);
 
 app.get("/", (req, res) => {
   res.status(200).json("server start");
@@ -82,6 +89,6 @@ app.get("/auth/google/callback", passport.authenticate("google", {
     failureRedirect: "http://localhost:3001/login"
 }))
 
-app.listen(PORT, () => {
-  console.log("server start at port " + PORT);
-});
+app.listen(PORT, ()=> {
+  console.log(`server is listening on port ${PORT}`)
+})
