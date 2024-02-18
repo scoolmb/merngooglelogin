@@ -73,7 +73,7 @@ app.get(
   "/auth/google/callback",
   passport.authenticate("google", {
     session: false,
-    successRedirect: "http://localhost:3000/dashboard",
+    successRedirect: "https://Vibey.io/app?token=token",
     failureRedirect: "http://localhost:3000/login",
   }),
   (req, res) => {
