@@ -36,59 +36,63 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 passport.use(
-    new OAuth2Strategy(
-      {
-        clientID: clientId,
-        clientSecret: clientSecret,
-        callbackURL: "/auth/google/callback",
-        scope: ["profile", "email"],
-        passReqToCallback: true
-      },
-      async (req, accessToken, refreshToken, profile, done) => {
-        console.log("profile", profile);
-        try {
-          let user = await userDb.findOne({ email: profile.emails[0].value, });
-          if (!user) {
-            user = new userDb({
-              googleId: profile.id,
-              displayName: profile.displayName,
-              email: profile.emails[0].value,
-              image: profile.photos[0].value
-            });
-            await user.save();
-          }
-          return done(null, user);
-        } catch (error) {
-          return done(error, null);
+  new OAuth2Strategy(
+    {
+      clientID: clientId,
+      clientSecret: clientSecret,
+      callbackURL: "/auth/google/callback",
+      scope: ["profile", "email"],
+      passReqToCallback: true,
+    },
+    async (req, accessToken, refreshToken, profile, done) => {
+      console.log("profile", profile);
+      try {
+        let user = await userDb.findOne({ email: profile.emails[0].value });
+        if (!user) {
+          user = new userDb({
+            googleId: profile.id,
+            displayName: profile.displayName,
+            email: profile.emails[0].value,
+            image: profile.photos[0].value,
+          });
+          await user.save();
         }
+        return done(null, user);
+      } catch (error) {
+        return done(error, null);
       }
-    )
-  );
-  
+    }
+  )
+);
 
-passport.serializeUser((user, done)=> {
-    done(null, user);
-})
-passport.deserializeUser((user, done)=> {
-    done(null, user);
-})
-app.all('*', (req, res, next) => {
-  throw new CustomError(`can't found the ${req.originalUrl}`, 404)
-})
-
-app.use(errorHandler);
-
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
+passport.deserializeUser((user, done) => {
+  done(null, user);
+});
 app.get("/", (req, res) => {
   res.status(200).json("server start");
 });
 
-app.get("/auth/google", passport.authenticate("google", {scope: ["profile", "email"]}))
+app.get(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
 
-app.get("/auth/google/callback", passport.authenticate("google", {
+app.get(
+  "/auth/google/callback",
+  passport.authenticate("google", {
     successRedirect: "http://localhost:3001/dashboard",
-    failureRedirect: "http://localhost:3001/login"
-}))
+    failureRedirect: "http://localhost:3001/login",
+  })
+);
+app.all("*", (req, res, next) => {
+  throw new CustomError(`can't found the ${req.originalUrl}`, 404);
+});
 
-app.listen(PORT, ()=> {
-  console.log(`server is listening on port ${PORT}`)
-})
+app.use(errorHandler);
+
+app.listen(PORT, () => {
+  console.log(`server is listening on port ${PORT}`);
+});
