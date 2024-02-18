@@ -4,36 +4,24 @@ const app = express();
 const cors = require("cors");
 const PORT = process.env.PORT || 6005;
 require("./db/connect");
-const session = require("express-session");
 const passport = require("passport");
 const OAuth2Strategy = require("passport-google-oauth2");
 const userDb = require("./model/userSchema");
-const CustomError = require("./utils/CustomError");
-const errorHandler = require("./utils/errorHandler");
+const jwt = require('jsonwebtoken');
+const jwtSecret = 'your-jwt-secret'; // Replace with your own secret key
 const clientId =
   "108207914740-3k2dsl1i59r5fsdu2qrudg196ee2csja.apps.googleusercontent.com";
 const clientSecret = "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";
 
 app.use(
   cors({
-    origin: "http://localhost:3001",
+    origin: "http://localhost:3000",
     methods: "GET,POST,PUT,DELETE",
     credentials: true,
   })
 );
 
 app.use(express.json());
-
-app.use(
-  session({
-    secret: "2134s54dgsdgse",
-    resave: false,
-    saveUninitialized: true,
-  })
-);
-
-app.use(passport.initialize());
-app.use(passport.session());
 
 passport.use(
   new OAuth2Strategy(
@@ -71,6 +59,7 @@ passport.serializeUser((user, done) => {
 passport.deserializeUser((user, done) => {
   done(null, user);
 });
+
 app.get("/", (req, res) => {
   res.status(200).json("server start");
 });
@@ -85,13 +74,14 @@ app.get(
   passport.authenticate("google", {
     successRedirect: "http://localhost:3001/dashboard",
     failureRedirect: "http://localhost:3001/login",
-  })
+  }),
+  (req, res) => {
+    // After successful Google authentication, generate a JWT token
+    const token = jwt.sign({ userId: req.user._id }, jwtSecret, { expiresIn: '1h' }); // Customize token expiration as needed
+    // Send the JWT token back to the client
+    res.json({ token });
+  }
 );
-app.all("*", (req, res, next) => {
-  throw new CustomError(`can't found the ${req.originalUrl}`, 404);
-});
-
-app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`server is listening on port ${PORT}`);
